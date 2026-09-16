@@ -1,0 +1,9 @@
+import { Link, useParams } from 'react-router-dom'
+import { PageHeader } from './PageParts'
+
+function OrderDetail() {
+  const { orderId } = useParams()
+  return <><PageHeader title={`Order #${orderId}`} description="Delivered on 14 September 2026." /><section className="container py-4 py-md-5"><div className="row g-4"><div className="col-lg-8"><div className="panel"><h2 className="h5 fw-bold">Delivery status</h2><div className="row mt-4"><div className="col track-step done"><div className="track-dot">✓</div><small>Confirmed</small></div><div className="col track-step done"><div className="track-dot">✓</div><small>Packed</small></div><div className="col track-step done"><div className="track-dot">✓</div><small>Out for delivery</small></div><div className="col track-step done"><div className="track-dot">✓</div><small>Delivered</small></div></div></div><div className="panel mt-4"><h2 className="h5 fw-bold">Items in this order</h2><div className="d-flex justify-content-between small mt-3"><span>Farm Fresh Apples × 1</span><b>₹149</b></div><div className="d-flex justify-content-between small mt-3"><span>Organic Broccoli × 1</span><b>₹79</b></div><div className="d-flex justify-content-between small mt-3"><span>Farm Eggs × 1</span><b>₹89</b></div></div></div><div className="col-lg-4"><aside className="summary"><h2 className="h5 fw-bold">Payment summary</h2><div className="d-flex justify-content-between small mt-3"><span>Items</span><span>₹317</span></div><div className="d-flex justify-content-between small mt-2"><span>Delivery</span><span>₹40</span></div><hr /><div className="d-flex justify-content-between fw-bold"><span>Total</span><span>₹357</span></div><Link className="btn btn-outline-success w-100 mt-4" to="/shop">Shop again</Link></aside></div></div></section></>
+}
+
+export default OrderDetail

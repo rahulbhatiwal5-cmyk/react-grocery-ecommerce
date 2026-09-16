@@ -1,0 +1,10 @@
+import { Link } from 'react-router-dom'
+import { PageHeader } from './PageParts'
+
+function Checkout() {
+  return (
+    <><PageHeader title="Checkout" description="A few details and your groceries will be on their way." /><section className="container py-4 py-md-5"><div className="row g-4"><div className="col-lg-8"><form className="panel"><h2 className="h5 fw-bold mb-3">Delivery details</h2><div className="row g-3"><div className="col-md-6"><label className="form-label small">First name</label><input className="form-control" required /></div><div className="col-md-6"><label className="form-label small">Last name</label><input className="form-control" required /></div><div className="col-12"><label className="form-label small">Address</label><input className="form-control" placeholder="House number and street" required /></div><div className="col-md-6"><label className="form-label small">City</label><input className="form-control" required /></div><div className="col-md-6"><label className="form-label small">Phone number</label><input className="form-control" type="tel" required /></div></div><h2 className="h5 fw-bold mt-4 mb-3">Payment</h2><div className="form-check"><input className="form-check-input" id="cod" name="payment" type="radio" defaultChecked /><label className="form-check-label small" htmlFor="cod">Cash on delivery</label></div><div className="form-check mt-2"><input className="form-check-input" id="online" name="payment" type="radio" /><label className="form-check-label small" htmlFor="online">Pay online</label></div></form></div><div className="col-lg-4"><aside className="summary"><h2 className="h5 fw-bold">Order summary</h2><div className="d-flex justify-content-between small mt-3"><span>Farm Fresh Apples</span><span>₹149</span></div><div className="d-flex justify-content-between small mt-2"><span>Delivery</span><span>₹40</span></div><hr /><div className="d-flex justify-content-between fw-bold"><span>Total</span><span>₹189</span></div><Link className="btn btn-success w-100 mt-4" to="/order-success">Place order</Link></aside></div></div></section></>
+  )
+}
+
+export default Checkout
