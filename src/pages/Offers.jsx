@@ -1,14 +1,23 @@
-import { Link } from 'react-router-dom'
-import { PageHeader, ProductCard } from './PageParts'
-import { products } from '../data/catalog'
+import DealCard from '../components/home/DealCard'
+import deals from '../data/deals'
 
 function Offers() {
   return (
     <>
-      <PageHeader title="Fresh offers" description="Save more on the groceries you buy every week." />
-      <section className="container py-4 py-md-5">
-        <div className="row g-4 mb-5"><div className="col-md-6"><div className="css-banner green"><div className="banner-copy"><span className="eyebrow">This week only</span><h3>Up to 25% off fresh picks</h3><Link className="btn btn-success btn-sm" to="/shop">Shop the deal</Link></div><div className="mini-basket" /></div></div><div className="col-md-6"><div className="css-banner blue"><div className="banner-copy"><span className="eyebrow">New customer offer</span><h3>₹100 off your first order</h3><p className="small mb-3">Use code WELCOME100 at checkout.</p><Link className="btn btn-outline-success btn-sm" to="/shop">Start shopping</Link></div><div className="mini-basket" /></div></div></div>
-        <h2 className="section-title mb-3">Deals you will love</h2><div className="list-grid d-grid">{products.filter((product) => product.discount).map((product) => <ProductCard product={product} key={product.slug} />)}</div>
+      <div className="page-head">
+        <div className="container">
+          <div className="eyebrow">Deals</div>
+          <h1>Today's Offers</h1>
+          <p className="text-secondary mb-0">
+            Simple savings on everyday groceries.
+          </p>
+        </div>
+      </div>
+
+      <section className="container py-4">
+        <div className="row g-3">
+          {deals.map((deal) => <DealCard key={deal.id} deal={deal} />)}
+        </div>
       </section>
     </>
   )

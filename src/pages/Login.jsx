@@ -1,7 +1,86 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 function Login() {
-  return <main className="container py-5" style={{ maxWidth: '520px' }}><div className="panel"><Link className="brand" to="/"><span className="brand-mark">G</span>Green<span className="brand-green">Basket</span></Link><h1 className="h3 fw-bold mt-4 mb-2">Welcome back</h1><p className="text-muted small mb-4">Sign in to access your orders and saved products.</p><form><label className="form-label small">Email address</label><input className="form-control mb-3" type="email" placeholder="you@example.com" required /><label className="form-label small">Password</label><input className="form-control mb-3" type="password" placeholder="••••••••" required /><button className="btn btn-success w-100" type="submit">Sign in</button></form><p className="small text-muted mt-4 mb-0">New to GreenBasket? <Link className="link-green" to="/register">Create an account</Link></p></div></main>
+  const [form, setForm] = useState({ email: '', password: '' })
+  const [feedback, setFeedback] = useState(null)
+
+  function handleChange(event) {
+    const { name, value } = event.target
+    setForm((current) => ({ ...current, [name]: value }))
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+
+    if (!form.email.trim() || !form.password) {
+      setFeedback({ type: 'danger', text: 'Enter your email and password to continue.' })
+      return
+    }
+
+    if (!form.email.includes('@')) {
+      setFeedback({ type: 'danger', text: 'Enter a valid email address.' })
+      return
+    }
+
+    setFeedback({ type: 'success', text: 'Login submitted. Authentication will be connected soon.' })
+  }
+
+  return (
+    <section className="container py-5">
+      <div className="panel mx-auto" style={{ maxWidth: '450px' }}>
+        <div className="text-center">
+          <div className="eyebrow">Welcome back</div>
+          <h1 className="fw-bold">Login</h1>
+          <p className="text-secondary small">Login to your GreenBasket account.</p>
+        </div>
+
+        {feedback && (
+          <div className={`alert alert-${feedback.type} small mt-3 mb-3`} role="alert">
+            {feedback.text}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="mb-3">
+            <label className="form-label small" htmlFor="login-email">Email</label>
+            <input
+              className="form-control"
+              id="login-email"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+              autoComplete="email"
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label small" htmlFor="login-password">Password</label>
+            <input
+              className="form-control"
+              id="login-password"
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              required
+            />
+          </div>
+
+          <button className="btn btn-success w-100" type="submit">Login</button>
+        </form>
+
+        <p className="text-center small mt-3 mb-0">
+          New here? <Link className="text-success fw-bold" to="/register">Create an account</Link>
+        </p>
+      </div>
+    </section>
+  )
 }
 
 export default Login

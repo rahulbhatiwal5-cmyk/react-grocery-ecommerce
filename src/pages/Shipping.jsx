@@ -1,7 +1,31 @@
-import { PageHeader } from './PageParts'
-
 function Shipping() {
-  return <><PageHeader title="Shipping & delivery" description="Everything you need to know about getting your groceries." /><section className="container py-4 py-md-5" style={{ maxWidth: '900px' }}><div className="panel"><h2 className="h5 fw-bold">Delivery areas and times</h2><p className="text-muted small mt-3">Enter your delivery address at checkout to see available time slots. We offer same-day delivery in selected locations when you place your order early enough.</p><h2 className="h5 fw-bold mt-4">Delivery fees</h2><p className="text-muted small mt-3">Delivery is free on orders above ₹499. A ₹40 fee applies to orders below that amount.</p><h2 className="h5 fw-bold mt-4">Freshness promise</h2><p className="text-muted small mt-3 mb-0">Every order is carefully packed to protect freshness on its way to you.</p></div></section></>
+  return (
+    <>
+      <div className="page-head">
+        <div className="container">
+          <div className="eyebrow">LEGAL</div>
+
+          <h1>Shipping &amp; Delivery</h1>
+        </div>
+      </div>
+
+      <section className="container py-5" style={{ maxWidth: '850px' }}>
+        <article className="panel">
+          <p className="text-secondary">
+            This is placeholder frontend content. Replace it with your
+            company-approved shipping policy before production launch.
+          </p>
+
+          <h5 className="fw-bold mt-4">1. Overview</h5>
+
+          <p className="text-secondary">
+            Add your final policy details, responsibilities, limitations and contact
+            information here.
+          </p>
+        </article>
+      </section>
+    </>
+  )
 }
 
 export default Shipping

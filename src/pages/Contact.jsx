@@ -1,7 +1,104 @@
-import { PageHeader } from './PageParts'
+import { useState } from 'react'
 
 function Contact() {
-  return <><PageHeader title="Contact us" description="Our support team is here to help with your order." /><section className="container py-4 py-md-5"><div className="row g-4"><div className="col-lg-5"><div className="panel h-100"><h2 className="h5 fw-bold">Get in touch</h2><p className="small text-muted mt-3">Email us at support@greenbasket.example or call 1800-123-4567.</p><p className="small text-muted mt-3 mb-0">We are available Monday to Sunday, 8:00 AM to 8:00 PM.</p></div></div><div className="col-lg-7"><form className="panel"><h2 className="h5 fw-bold mb-3">Send a message</h2><label className="form-label small">Name</label><input className="form-control mb-3" required /><label className="form-label small">Email</label><input className="form-control mb-3" type="email" required /><label className="form-label small">How can we help?</label><textarea className="form-control mb-3" rows="5" required /><button className="btn btn-success" type="submit">Send message</button></form></div></div></section></>
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: '',
+  })
+  const [submitted, setSubmitted] = useState(false)
+
+  const handleChange = (event) => {
+    const { name, value } = event.target
+
+    setFormData((currentData) => ({
+      ...currentData,
+      [name]: value,
+    }))
+    setSubmitted(false)
+  }
+
+  const handleSubmit = (event) => {
+    event.preventDefault()
+
+    setSubmitted(true)
+    setFormData({ name: '', email: '', message: '' })
+  }
+
+  return (
+    <>
+      <div className="page-head">
+        <div className="container">
+          <div className="eyebrow">SUPPORT</div>
+
+          <h1>How can we help?</h1>
+        </div>
+      </div>
+
+      <section className="container py-5" style={{ maxWidth: '760px' }}>
+        <form className="panel" onSubmit={handleSubmit}>
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="form-label small" htmlFor="contact-name">
+                Name
+              </label>
+
+              <input
+                className="form-control"
+                id="contact-name"
+                name="name"
+                onChange={handleChange}
+                required
+                value={formData.name}
+              />
+            </div>
+
+            <div className="col-md-6">
+              <label className="form-label small" htmlFor="contact-email">
+                Email
+              </label>
+
+              <input
+                className="form-control"
+                id="contact-email"
+                name="email"
+                onChange={handleChange}
+                required
+                type="email"
+                value={formData.email}
+              />
+            </div>
+
+            <div className="col-12">
+              <label className="form-label small" htmlFor="contact-message">
+                Message
+              </label>
+
+              <textarea
+                className="form-control"
+                id="contact-message"
+                name="message"
+                onChange={handleChange}
+                required
+                rows="5"
+                value={formData.message}
+              />
+            </div>
+          </div>
+
+          <button className="btn btn-success mt-3" type="submit">
+            Send Message
+          </button>
+
+          {submitted && (
+            <p className="small text-success mt-3 mb-0" role="status">
+              Thanks for getting in touch. We&apos;ll be in touch soon.
+            </p>
+          )}
+        </form>
+      </section>
+    </>
+  )
 }
 
 export default Contact

@@ -1,6 +1,9 @@
 import { Link, NavLink } from 'react-router-dom'
+import useCart from '../../hooks/useCart'
 
 function Header() {
+  const { cartCount } = useCart()
+
   return (
     <nav className="navbar navbar-expand-lg sticky-top">
       <div className="container py-2">
@@ -78,7 +81,7 @@ function Header() {
                 className="btn btn-success btn-sm"
                 to="/cart"
               >
-                Cart (0)
+                Cart ({cartCount})
               </Link>
             </li>
 

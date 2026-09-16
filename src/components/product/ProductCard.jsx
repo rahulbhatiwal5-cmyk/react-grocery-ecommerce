@@ -1,4 +1,12 @@
+import { Link } from 'react-router-dom'
+
+import useCart from '../../hooks/useCart'
+import useWishlist from '../../hooks/useWishlist'
+
 function ProductCard({ product }) {
+  const { addToCart } = useCart()
+  const { isWishlisted, toggleWishlist } = useWishlist()
+
   const productLabel =
     product.category === 'produce'
       ? ''
@@ -15,11 +23,15 @@ function ProductCard({ product }) {
           </span>
 
           <button
-            className="wishlist-btn"
+            className={`wishlist-btn ${
+              isWishlisted(product.id) ? 'text-success' : ''
+            }`}
             type="button"
             aria-label={`Add ${product.name} to wishlist`}
+            aria-pressed={isWishlisted(product.id)}
+            onClick={() => toggleWishlist(product)}
           >
-            ♡
+            {isWishlisted(product.id) ? '♥' : '♡'}
           </button>
 
           <div
@@ -34,9 +46,12 @@ function ProductCard({ product }) {
 
         </div>
 
-        <div className="product-name">
+        <Link
+          className="product-name d-block text-dark"
+          to={`/products/${product.id}`}
+        >
           {product.name}
-        </div>
+        </Link>
 
         <div className="product-meta">
           {product.unit} · Quality checked
@@ -60,6 +75,7 @@ function ProductCard({ product }) {
             className="add-btn"
             type="button"
             aria-label={`Add ${product.name} to cart`}
+            onClick={() => addToCart(product)}
           >
             +
           </button>

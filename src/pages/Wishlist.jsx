@@ -1,7 +1,44 @@
-import { EmptyState, PageHeader } from './PageParts'
+import { Link } from 'react-router-dom'
+
+import ProductCard from '../components/product/ProductCard'
+import useWishlist from '../hooks/useWishlist'
 
 function Wishlist() {
-  return <><PageHeader title="My wishlist" description="Keep products you love close at hand." /><section className="container py-4 py-md-5"><EmptyState title="Your wishlist is empty" text="Save products here to come back to them whenever you like." /></section></>
+  const { wishlistItems } = useWishlist()
+
+  return (
+    <>
+      <div className="page-head">
+        <div className="container">
+          <div className="eyebrow">Saved Items</div>
+          <h1>My Wishlist</h1>
+        </div>
+      </div>
+
+      <section className="container py-4">
+        <div className="row g-3">
+          {wishlistItems.length > 0 ? (
+            wishlistItems.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))
+          ) : (
+            <div className="col-12">
+              <div className="panel text-center py-5">
+                <div className="display-6">🛒</div>
+                <h2 className="h5 mt-3">No products found</h2>
+                <p className="text-secondary small">
+                  Save products here to shop them later.
+                </p>
+                <Link className="btn btn-success btn-sm" to="/shop">
+                  Browse Products
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    </>
+  )
 }
 
 export default Wishlist

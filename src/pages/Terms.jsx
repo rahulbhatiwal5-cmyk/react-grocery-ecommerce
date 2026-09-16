@@ -1,7 +1,31 @@
-import { PageHeader } from './PageParts'
-
 function Terms() {
-  return <><PageHeader title="Terms of service" description="The simple terms for using GreenBasket." /><section className="container py-4 py-md-5" style={{ maxWidth: '900px' }}><article className="panel"><h2 className="h5 fw-bold">Using our service</h2><p className="small text-muted mt-3">By placing an order, you agree to provide accurate account and delivery details and to pay the displayed price for confirmed items.</p><h2 className="h5 fw-bold mt-4">Products and availability</h2><p className="small text-muted mt-3">Product availability can change. If an item is unavailable, it will not be charged to your final order.</p><h2 className="h5 fw-bold mt-4">Delivery</h2><p className="small text-muted mt-3 mb-0">Delivery timings are estimates and may vary due to traffic, weather, and operational needs.</p></article></section></>
+  return (
+    <>
+      <div className="page-head">
+        <div className="container">
+          <div className="eyebrow">LEGAL</div>
+
+          <h1>Terms &amp; Conditions</h1>
+        </div>
+      </div>
+
+      <section className="container py-5" style={{ maxWidth: '850px' }}>
+        <article className="panel">
+          <p className="text-secondary">
+            This is placeholder frontend content. Replace it with your
+            company-approved terms before production launch.
+          </p>
+
+          <h5 className="fw-bold mt-4">1. Overview</h5>
+
+          <p className="text-secondary">
+            Add your final policy details, responsibilities, limitations and contact
+            information here.
+          </p>
+        </article>
+      </section>
+    </>
+  )
 }
 
 export default Terms

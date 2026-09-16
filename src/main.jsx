@@ -9,11 +9,17 @@ import './index.css'
 import './assets/css/style.css'
 
 import App from './App.jsx'
+import { CartProvider } from './context/CartContext.jsx'
+import { WishlistProvider } from './context/WishlistContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <CartProvider>
+        <WishlistProvider>
+          <App />
+        </WishlistProvider>
+      </CartProvider>
     </BrowserRouter>
   </StrictMode>,
 )

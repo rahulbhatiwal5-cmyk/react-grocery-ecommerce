@@ -1,14 +1,70 @@
-import { PageHeader } from './PageParts'
+import { useState } from 'react'
 
 const questions = [
-  ['When will my order arrive?', 'You can select an available delivery slot during checkout.'],
-  ['What happens if an item is unavailable?', 'We will let you know before delivery and will not charge you for unavailable items.'],
-  ['Can I change my order?', 'You can contact support before your order is packed and we will do our best to help.'],
-  ['Is there a delivery fee?', 'Delivery is free for orders above ₹499. Smaller orders have a ₹40 delivery fee.'],
+  {
+    answer: 'Eligible orders can be delivered in approximately 10–20 minutes.',
+    question: 'How fast is delivery?',
+  },
+  {
+    answer: 'Cancellation rules can be connected to your backend order status.',
+    question: 'Can I cancel my order?',
+  },
 ]
 
 function FAQ() {
-  return <><PageHeader title="Frequently asked questions" description="Quick answers about shopping and delivery." /><section className="container py-4 py-md-5" style={{ maxWidth: '900px' }}><div className="accordion" id="faqList">{questions.map(([question, answer], index) => <div className="accordion-item" key={question}><h2 className="accordion-header"><button className={`accordion-button ${index ? 'collapsed' : ''}`} type="button" data-bs-toggle="collapse" data-bs-target={`#faq-${index}`} aria-expanded={index === 0} aria-controls={`faq-${index}`}>{question}</button></h2><div id={`faq-${index}`} className={`accordion-collapse collapse ${index === 0 ? 'show' : ''}`} data-bs-parent="#faqList"><div className="accordion-body small text-muted">{answer}</div></div></div>)}</div></section></>
+  const [openQuestion, setOpenQuestion] = useState(0)
+
+  const handleToggle = (index) => {
+    setOpenQuestion((currentQuestion) => (
+      currentQuestion === index ? null : index
+    ))
+  }
+
+  return (
+    <>
+      <div className="page-head">
+        <div className="container">
+          <div className="eyebrow">HELP</div>
+
+          <h1>Frequently Asked Questions</h1>
+        </div>
+      </div>
+
+      <section className="container py-5" style={{ maxWidth: '850px' }}>
+        <div className="accordion" id="faq">
+          {questions.map(({ answer, question }, index) => {
+            const isOpen = openQuestion === index
+            const headingId = `faq-heading-${index}`
+            const panelId = `faq-panel-${index}`
+
+            return (
+              <div className="accordion-item" key={question}>
+                <h2 className="accordion-header" id={headingId}>
+                  <button
+                    aria-controls={panelId}
+                    aria-expanded={isOpen}
+                    className={`accordion-button${isOpen ? '' : ' collapsed'}`}
+                    onClick={() => handleToggle(index)}
+                    type="button"
+                  >
+                    {question}
+                  </button>
+                </h2>
+
+                <div
+                  aria-labelledby={headingId}
+                  className={`accordion-collapse collapse${isOpen ? ' show' : ''}`}
+                  id={panelId}
+                >
+                  <div className="accordion-body">{answer}</div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+    </>
+  )
 }
 
 export default FAQ
