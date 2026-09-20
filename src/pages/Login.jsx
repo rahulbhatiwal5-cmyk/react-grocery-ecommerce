@@ -1,49 +1,114 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+
+import useAuth from '../hooks/useAuth'
 
 function Login() {
-  const [form, setForm] = useState({ email: '', password: '' })
+  const navigate = useNavigate()
+  const { login } = useAuth()
+
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+  })
+
   const [feedback, setFeedback] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   function handleChange(event) {
     const { name, value } = event.target
-    setForm((current) => ({ ...current, [name]: value }))
+
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }))
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
 
+    setFeedback(null)
+
     if (!form.email.trim() || !form.password) {
-      setFeedback({ type: 'danger', text: 'Enter your email and password to continue.' })
+      setFeedback({
+        type: 'danger',
+        text: 'Enter your email and password to continue.',
+      })
+
       return
     }
 
     if (!form.email.includes('@')) {
-      setFeedback({ type: 'danger', text: 'Enter a valid email address.' })
+      setFeedback({
+        type: 'danger',
+        text: 'Enter a valid email address.',
+      })
+
       return
     }
 
-    setFeedback({ type: 'success', text: 'Login submitted. Authentication will be connected soon.' })
+    try {
+      setLoading(true)
+
+      await login({
+        email: form.email,
+        password: form.password,
+      })
+
+      navigate('/account')
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        'Unable to login. Please try again.'
+
+      setFeedback({
+        type: 'danger',
+        text: message,
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <section className="container py-5">
-      <div className="panel mx-auto" style={{ maxWidth: '450px' }}>
+      <div
+        className="panel mx-auto"
+        style={{ maxWidth: '450px' }}
+      >
         <div className="text-center">
-          <div className="eyebrow">Welcome back</div>
-          <h1 className="fw-bold">Login</h1>
-          <p className="text-secondary small">Login to your GreenBasket account.</p>
+          <div className="eyebrow">
+            Welcome back
+          </div>
+
+          <h1 className="fw-bold">
+            Login
+          </h1>
+
+          <p className="text-secondary small">
+            Login to your GreenBasket account.
+          </p>
         </div>
 
         {feedback && (
-          <div className={`alert alert-${feedback.type} small mt-3 mb-3`} role="alert">
+          <div
+            className={`alert alert-${feedback.type} small mt-3 mb-3`}
+            role="alert"
+          >
             {feedback.text}
           </div>
         )}
 
         <form onSubmit={handleSubmit} noValidate>
+
           <div className="mb-3">
-            <label className="form-label small" htmlFor="login-email">Email</label>
+            <label
+              className="form-label small"
+              htmlFor="login-email"
+            >
+              Email
+            </label>
+
             <input
               className="form-control"
               id="login-email"
@@ -58,7 +123,13 @@ function Login() {
           </div>
 
           <div className="mb-3">
-            <label className="form-label small" htmlFor="login-password">Password</label>
+            <label
+              className="form-label small"
+              htmlFor="login-password"
+            >
+              Password
+            </label>
+
             <input
               className="form-control"
               id="login-password"
@@ -72,11 +143,24 @@ function Login() {
             />
           </div>
 
-          <button className="btn btn-success w-100" type="submit">Login</button>
+          <button
+            className="btn btn-success w-100"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+
         </form>
 
         <p className="text-center small mt-3 mb-0">
-          New here? <Link className="text-success fw-bold" to="/register">Create an account</Link>
+          New here?{' '}
+          <Link
+            className="text-success fw-bold"
+            to="/register"
+          >
+            Create an account
+          </Link>
         </p>
       </div>
     </section>
