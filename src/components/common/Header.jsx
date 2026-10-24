@@ -1,8 +1,10 @@
 import { Link, NavLink } from 'react-router-dom'
 import useCart from '../../hooks/useCart'
+import useAuth from '../../hooks/useAuth'
 
 function Header() {
   const { cartCount } = useCart()
+  const { user, isAuthenticated } = useAuth()
 
   return (
     <nav className="navbar navbar-expand-lg sticky-top">
@@ -71,9 +73,15 @@ function Header() {
             </li>
 
             <li className="nav-item">
-              <Link className="nav-link" to="/account">
-                Account
-              </Link>
+              {isAuthenticated ? (
+                <Link className="nav-link" to="/account">
+                  {user?.name || 'Account'}
+                </Link>
+              ) : (
+                <Link className="nav-link" to="/login">
+                  Login
+                </Link>
+              )}
             </li>
 
             <li className="nav-item ms-lg-2">

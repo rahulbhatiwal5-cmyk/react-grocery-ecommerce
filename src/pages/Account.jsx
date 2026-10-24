@@ -1,41 +1,17 @@
-import { Link, Navigate, useNavigate } from 'react-router-dom'
-
+import { Link, useNavigate } from 'react-router-dom'
 import useAuth from '../hooks/useAuth'
 
 function Account() {
   const navigate = useNavigate()
 
-  const {
-    user,
-    loading,
-    isAuthenticated,
-    logout,
-  } = useAuth()
+ const { user, logout } = useAuth()
 
   async function handleLogout() {
     await logout()
     navigate('/login')
   }
 
-  if (loading) {
-    return (
-      <div className="container py-5 text-center">
-        <div
-          className="spinner-border text-success"
-          role="status"
-        >
-          <span className="visually-hidden">
-            Loading...
-          </span>
-        </div>
-      </div>
-    )
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
-
+ 
   return (
     <>
       <section className="page-head">
