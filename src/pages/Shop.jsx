@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import products from '../data/products'
+import { getProducts } from '../services/productService'
 import ProductCard from '../components/product/ProductCard'
 import ShopSidebar from '../components/shop/ShopSidebar'
 
@@ -8,25 +8,18 @@ function Shop() {
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState('recommended')
 
-  const filteredProducts = useMemo(() => {
-    const searchText = search.trim().toLowerCase()
-
-    let result = products.filter((product) => {
-      const searchableText =
-        `${product.name} ${product.category} ${product.unit}`.toLowerCase()
-
-      return searchableText.includes(searchText)
-    })
-
-    if (sortBy === 'low-to-high') {
-      result = [...result].sort((a, b) => a.price - b.price)
-    }
-
-    if (sortBy === 'high-to-low') {
-      result = [...result].sort((a, b) => b.price - a.price)
-    }
-
-    return result
+  const [filteredProducts, setProducts] = useState([])
+  const [status, setStatus] = useState('loading')
+  useEffect(() => {
+    const controller = new AbortController()
+    const timer = setTimeout(() => {
+      setStatus('loading')
+      const sort = { 'low-to-high': 'price_asc', 'high-to-low': 'price_desc' }[sortBy] || 'recommended'
+      getProducts({ search: search.trim(), sort }, controller.signal)
+        .then((items) => { setProducts(items); setStatus('ready') })
+        .catch((error) => { if (error.code !== 'ERR_CANCELED') setStatus('error') })
+    }, 250)
+    return () => { clearTimeout(timer); controller.abort() }
   }, [search, sortBy])
 
   return (
@@ -60,7 +53,7 @@ function Shop() {
             <div className="d-flex justify-content-between align-items-center mb-3">
 
               <span className="small text-secondary">
-                {filteredProducts.length} products
+                {status === 'ready' ? `${filteredProducts.length} products` : 'Loading products?'}
               </span>
 
               <select
@@ -86,7 +79,7 @@ function Shop() {
 
             <div className="row g-3">
 
-              {filteredProducts.length > 0 ? (
+              {status === 'loading' ? <p className="col-12">Loading products?</p> : status === 'error' ? <p className="col-12 text-danger">Unable to load products. Please try again.</p> : filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}

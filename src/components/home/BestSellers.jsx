@@ -1,10 +1,18 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import products from '../../data/products'
+import { getProducts } from '../../services/productService'
 import ProductCard from '../product/ProductCard'
 
 function BestSellers() {
-  const bestSellers = products.slice(0, 4)
+  const [bestSellers, setBestSellers] = useState([])
+  const [status, setStatus] = useState('loading')
+  useEffect(() => {
+    const controller = new AbortController()
+    getProducts({}, controller.signal).then((items) => { setBestSellers(items.slice(0, 4)); setStatus('ready') })
+      .catch((error) => { if (error.code !== 'ERR_CANCELED') setStatus('error') })
+    return () => controller.abort()
+  }, [])
 
   return (
     <section className="mt-5">
@@ -23,6 +31,9 @@ function BestSellers() {
 
       <div className="row g-3">
 
+        {status === 'loading' && <p>Loading products?</p>}
+        {status === 'error' && <p className="text-danger">Unable to load products. Please try again.</p>}
+        {status === 'ready' && bestSellers.length === 0 && <p>No products available yet.</p>}
         {bestSellers.map((product) => (
           <ProductCard
             key={product.id}

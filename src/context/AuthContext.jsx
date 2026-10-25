@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from 'react'
+import { AUTH_CHANGED } from '../services/api'
 
 import {
   getCurrentUser,
@@ -18,6 +19,16 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const syncAuth = (event) => {
+      setToken(event.detail)
+      if (!event.detail) setUser(null)
+    }
+    window.addEventListener(AUTH_CHANGED, syncAuth)
+    return () => window.removeEventListener(AUTH_CHANGED, syncAuth)
+  }, [])
+
+  useEffect(() => {
+    let active = true
     const loadUser = async () => {
       if (!token) {
         setUser(null)
@@ -26,20 +37,22 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const response = await getCurrentUser(token)
+        const response = await getCurrentUser()
 
-        setUser(response.user)
-      } catch {
+        if (active) setUser(response.user)
+      } catch (error) {
+        if (!active || error.response?.status !== 401) return
         localStorage.removeItem('greenbasket_token')
 
         setToken(null)
         setUser(null)
       } finally {
-        setLoading(false)
+        if (active) setLoading(false)
       }
     }
 
     loadUser()
+    return () => { active = false }
   }, [token])
 
   const login = async (credentials) => {
@@ -73,7 +86,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       if (token) {
-        await logoutUser(token)
+        await logoutUser()
       }
     } finally {
       localStorage.removeItem('greenbasket_token')

@@ -15,8 +15,10 @@ function readStoredWishlist() {
     }
 
     return parsedWishlist
-      .map((item) => products.find(
-        (product) => product.id === Number(item?.id ?? item),
+      .map((item) => (
+        item && typeof item === 'object' && item.name && Number.isFinite(Number(item.price))
+          ? item
+          : products.find((product) => product.id === Number(item?.id ?? item))
       ))
       .filter(Boolean)
   } catch {

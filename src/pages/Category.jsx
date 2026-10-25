@@ -1,21 +1,27 @@
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import categories from '../data/categories'
-import products from '../data/products'
+import { getCategory } from '../services/categoryService'
 import ProductCard from '../components/product/ProductCard'
 
 function Category() {
   const { categorySlug } = useParams()
 
-  const category = categories.find(
-    (item) => item.slug === categorySlug
-  )
+  const [category, setCategory] = useState(null)
+  const [status, setStatus] = useState('loading')
+  const [loadedKey, setLoadedKey] = useState(null)
+  useEffect(() => {
+    const controller = new AbortController()
+    getCategory(categorySlug, controller.signal)
+      .then((item) => { setLoadedKey(categorySlug); setCategory(item); setStatus('ready') })
+      .catch((error) => { if (error.code !== 'ERR_CANCELED') { setLoadedKey(categorySlug); setStatus(error.response?.status === 404 ? 'missing' : 'error') } })
+    return () => controller.abort()
+  }, [categorySlug])
+  if (loadedKey !== categorySlug || status === 'loading') return <div className="container py-5">Loading category?</div>
+  if (status === 'error') return <div className="container py-5 text-danger">Unable to load category. Please try again.</div>
+  const categoryProducts = category?.products || []
 
-  const categoryProducts = products.filter(
-    (product) => product.category === categorySlug
-  )
-
-  if (!category) {
+  if (status === 'missing' || !category) {
     return (
       <div className="container py-5 text-center">
         <h1 className="h3">Category not found</h1>

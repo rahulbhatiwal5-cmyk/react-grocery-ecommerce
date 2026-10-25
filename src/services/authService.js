@@ -1,49 +1,7 @@
 import api from './api'
 
-export const registerUser = async (data) => {
-  const response = await api.post('/register', data)
-  return response.data
-}
-
-export const loginUser = async (data) => {
-  const response = await api.post('/login', data)
-  return response.data
-}
-
-export const getCurrentUser = async (token) => {
-  const response = await api.get('/me', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  return response.data
-}
-
-export const logoutUser = async (token) => {
-  const response = await api.post(
-    '/logout',
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  )
-
-  return response.data
-}
-
-export const refreshToken = async (token) => {
-  const response = await api.post(
-    '/refresh',
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  )
-
-  return response.data
-}
+export const registerUser = async (data) => (await api.post('/register', data, { skipAuth: true })).data
+export const loginUser = async (data) => (await api.post('/login', data, { skipAuth: true })).data
+export const getCurrentUser = async () => (await api.get('/me')).data
+export const logoutUser = async () => (await api.post('/logout', {}, { skipRefresh: true })).data
+export const refreshToken = async () => (await api.post('/refresh', {}, { skipRefresh: true })).data

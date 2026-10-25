@@ -1,9 +1,18 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import categories from '../../data/categories'
+import { getCategories } from '../../services/categoryService'
 import CategoryCard from '../category/CategoryCard'
 
 function TopCategories() {
+  const [categories, setCategories] = useState([])
+  const [status, setStatus] = useState('loading')
+  useEffect(() => {
+    const controller = new AbortController()
+    getCategories(controller.signal).then((items) => { setCategories(items); setStatus('ready') })
+      .catch((error) => { if (error.code !== 'ERR_CANCELED') setStatus('error') })
+    return () => controller.abort()
+  }, [])
   return (
     <section className="mt-5">
 
@@ -19,6 +28,9 @@ function TopCategories() {
 
       <div className="row g-3">
 
+        {status === 'loading' && <p>Loading categories?</p>}
+        {status === 'error' && <p className="text-danger">Unable to load categories. Please try again.</p>}
+        {status === 'ready' && categories.length === 0 && <p>No categories available yet.</p>}
         {categories.map((category) => (
           <CategoryCard
             key={category.id}

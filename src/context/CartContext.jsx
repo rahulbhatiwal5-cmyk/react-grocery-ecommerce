@@ -17,9 +17,9 @@ function readStoredCart() {
 
     return parsedCart
       .map((item) => {
-        const product = products.find(
-          (currentProduct) => currentProduct.id === Number(item?.id),
-        )
+        const product = item && typeof item === 'object' && item.name && Number.isFinite(Number(item.price))
+          ? item
+          : products.find((currentProduct) => currentProduct.id === Number(item?.id))
 
         if (!product) {
           return null

@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import ProductCard from '../components/product/ProductCard'
-import products from '../data/products'
+import { getProduct, getProducts } from '../services/productService'
 import useCart from '../hooks/useCart'
 import useWishlist from '../hooks/useWishlist'
 
@@ -13,9 +13,30 @@ function Product() {
   const { isWishlisted, toggleWishlist } = useWishlist()
   const [quantity, setQuantity] = useState(1)
 
-  const product = products.find((item) => item.id === Number(productId))
+  const [product, setProduct] = useState(null)
+  const [relatedProducts, setRelatedProducts] = useState([])
+  const [status, setStatus] = useState('loading')
+  const [loadedKey, setLoadedKey] = useState(null)
+  useEffect(() => {
+    const controller = new AbortController()
+    getProduct(productId, controller.signal).then((item) => {
+      setLoadedKey(productId)
+      setRelatedProducts([])
+      setProduct(item)
+      setStatus('ready')
+      getProducts({ category: item.category }, controller.signal)
+        .then((items) => setRelatedProducts(items.filter((related) => related.id !== item.id).slice(0, 4)))
+        .catch(() => {})
+    }).catch((error) => {
+      if (error.code !== 'ERR_CANCELED') { setLoadedKey(productId); setStatus(error.response?.status === 404 ? 'missing' : 'error') }
+    })
+    return () => controller.abort()
+  }, [productId])
 
-  if (!product) {
+  if (loadedKey !== productId || status === 'loading') return <div className="container py-5">Loading product?</div>
+  if (status === 'error') return <div className="container py-5 text-danger">Unable to load product. Please try again.</div>
+
+  if (status === 'missing' || !product) {
     return (
       <div className="container py-5 text-center">
         <h1 className="h3">Product not found</h1>
@@ -34,10 +55,6 @@ function Product() {
   const productLabel = product.category === 'produce'
     ? ''
     : product.name.split(' ')[0].toUpperCase()
-
-  const relatedProducts = products
-    .filter((item) => item.category === product.category && item.id !== product.id)
-    .slice(0, 4)
 
   const handleAddToCart = () => {
     addToCart(product, quantity)
