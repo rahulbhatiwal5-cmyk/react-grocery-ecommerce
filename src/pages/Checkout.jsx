@@ -24,6 +24,7 @@ function Checkout() {
     subtotal,
   } = useCart()
   const [formValues, setFormValues] = useState(initialFormValues)
+  const [submitting, setSubmitting] = useState(false)
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -34,17 +35,20 @@ function Checkout() {
     }))
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
-    if (cartItems.length === 0) {
+    if (cartItems.length === 0 || submitting) {
       return
     }
 
     const orderNumber = `GB-${Date.now().toString().slice(-6)}`
     const orderTotal = grandTotal
 
-    clearCart()
+    setSubmitting(true)
+    const cleared = await clearCart()
+    setSubmitting(false)
+    if (!cleared) return
     navigate('/order-success', {
       state: { orderNumber, grandTotal: orderTotal },
     })
@@ -187,7 +191,7 @@ function Checkout() {
 
               <button
                 className="btn btn-success mt-4 px-4"
-                disabled={cartItems.length === 0}
+                disabled={cartItems.length === 0 || submitting}
                 type="submit"
               >
                 Place Order

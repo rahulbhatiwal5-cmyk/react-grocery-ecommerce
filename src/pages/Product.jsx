@@ -9,8 +9,8 @@ import useWishlist from '../hooks/useWishlist'
 function Product() {
   const { productId } = useParams()
   const navigate = useNavigate()
-  const { addToCart } = useCart()
-  const { isWishlisted, toggleWishlist } = useWishlist()
+  const { addToCart, cartLoading } = useCart()
+  const { isWishlisted, toggleWishlist, wishlistLoading, isWishlistPending } = useWishlist()
   const [quantity, setQuantity] = useState(1)
 
   const [product, setProduct] = useState(null)
@@ -60,9 +60,8 @@ function Product() {
     addToCart(product, quantity)
   }
 
-  const handleBuyNow = () => {
-    addToCart(product, quantity)
-    navigate('/checkout')
+  const handleBuyNow = async () => {
+    if (await addToCart(product, quantity)) navigate('/checkout')
   }
 
   return (
@@ -136,6 +135,7 @@ function Product() {
             <button
               className="btn btn-success px-4"
               type="button"
+              disabled={cartLoading}
               onClick={handleAddToCart}
             >
               Add to Cart
@@ -144,6 +144,7 @@ function Product() {
             <button
               className="btn btn-outline-success px-4"
               type="button"
+              disabled={cartLoading}
               onClick={handleBuyNow}
             >
               Buy Now
@@ -153,6 +154,7 @@ function Product() {
               className="btn btn-outline-success"
               type="button"
               aria-pressed={isWishlisted(product.id)}
+              disabled={wishlistLoading || isWishlistPending(product.id)}
               onClick={() => toggleWishlist(product)}
             >
               {isWishlisted(product.id) ? '♥ Saved' : '♡ Save'}

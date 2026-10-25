@@ -4,8 +4,8 @@ import useCart from '../../hooks/useCart'
 import useWishlist from '../../hooks/useWishlist'
 
 function ProductCard({ product }) {
-  const { addToCart } = useCart()
-  const { isWishlisted, toggleWishlist } = useWishlist()
+  const { addToCart, cartLoading } = useCart()
+  const { isWishlisted, toggleWishlist, wishlistLoading, isWishlistPending } = useWishlist()
 
   const productLabel =
     product.category === 'produce'
@@ -29,6 +29,7 @@ function ProductCard({ product }) {
             type="button"
             aria-label={`Add ${product.name} to wishlist`}
             aria-pressed={isWishlisted(product.id)}
+            disabled={wishlistLoading || isWishlistPending(product.id)}
             onClick={() => toggleWishlist(product)}
           >
             {isWishlisted(product.id) ? '♥' : '♡'}
@@ -75,6 +76,7 @@ function ProductCard({ product }) {
             className="add-btn"
             type="button"
             aria-label={`Add ${product.name} to cart`}
+            disabled={cartLoading}
             onClick={() => addToCart(product)}
           >
             +

@@ -4,7 +4,7 @@ import ProductCard from '../components/product/ProductCard'
 import useWishlist from '../hooks/useWishlist'
 
 function Wishlist() {
-  const { wishlistItems } = useWishlist()
+  const { wishlistItems, wishlistLoading, wishlistError, retryWishlist } = useWishlist()
 
   return (
     <>
@@ -16,8 +16,9 @@ function Wishlist() {
       </div>
 
       <section className="container py-4">
+        {wishlistError && <div className="alert alert-warning" role="alert">{wishlistError} <button type="button" className="btn btn-link" onClick={retryWishlist}>Retry</button></div>}
         <div className="row g-3">
-          {wishlistItems.length > 0 ? (
+          {wishlistLoading ? <p role="status">Loading wishlist...</p> : wishlistError && wishlistItems.length === 0 ? null : wishlistItems.length > 0 ? (
             wishlistItems.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))

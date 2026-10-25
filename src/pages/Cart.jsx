@@ -6,6 +6,9 @@ function Cart() {
   const {
     cartItems,
     cartCount,
+    cartError,
+    cartLoading,
+    retryCart,
     decreaseQuantity,
     deliveryCharge,
     grandTotal,
@@ -27,7 +30,8 @@ function Cart() {
         <div className="row g-4">
           <div className="col-lg-8">
             <div className="panel">
-              {cartItems.length > 0 ? (
+              {cartError && <div className="alert alert-warning" role="alert">{cartError} <button type="button" className="btn btn-link" onClick={retryCart}>Retry</button></div>}
+              {cartLoading ? <p role="status">Loading cart...</p> : cartError && cartItems.length === 0 ? null : cartItems.length > 0 ? (
                 cartItems.map((item) => {
                   const productLabel = item.category === 'produce'
                     ? ''

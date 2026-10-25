@@ -1,10 +1,12 @@
 import { Link, NavLink } from 'react-router-dom'
 import useCart from '../../hooks/useCart'
 import useAuth from '../../hooks/useAuth'
+import useWishlist from '../../hooks/useWishlist'
 
 function Header() {
-  const { cartCount } = useCart()
+  const { cartCount, cartError } = useCart()
   const { user, isAuthenticated } = useAuth()
+  const { wishlistError } = useWishlist()
 
   return (
     <nav className="navbar navbar-expand-lg sticky-top">
@@ -84,6 +86,8 @@ function Header() {
               )}
             </li>
 
+            {wishlistError && <li className="nav-item"><Link className="nav-link text-danger" role="alert" to="/wishlist">Wishlist needs attention</Link></li>}
+            {cartError && <li className="nav-item"><Link className="nav-link text-danger" role="alert" to="/cart">Cart needs attention</Link></li>}
             <li className="nav-item ms-lg-2">
               <Link
                 className="btn btn-success btn-sm"

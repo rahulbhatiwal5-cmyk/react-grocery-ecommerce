@@ -18,6 +18,15 @@ function updateToken(token) {
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY)
+  if (config.expectedUserId != null) {
+    try {
+      const encoded = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+      const subject = JSON.parse(atob(encoded)).sub
+      if (String(subject) !== String(config.expectedUserId)) throw new Error('Session changed')
+    } catch {
+      return Promise.reject(new Error('Your session changed. Please retry.'))
+    }
+  }
   if (token && !config.skipAuth) config.headers.Authorization = `Bearer ${token}`
   config.sentToken = config.skipAuth ? null : token
   return config
