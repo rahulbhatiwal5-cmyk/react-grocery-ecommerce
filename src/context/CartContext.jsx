@@ -67,7 +67,6 @@ export function CartProvider({ children }) {
     currentCart.current = null
     queue.current = Promise.resolve()
     // Reset the previous session before its cart can be shown again.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setServerState({ owner: null, cart: null, status: 'idle', error: '' })
   }, [userId])
 
@@ -203,13 +202,39 @@ export function CartProvider({ children }) {
     return guestChange(() => [])
   }, [loggedIn, runServer, guestChange, userId])
 
+  const refreshCart = useCallback(() => {
+    if (!loggedIn) return Promise.resolve(false)
+    const owner = userId
+    queue.current = queue.current.catch(() => {}).then(async () => {
+      if (session.current !== owner) return false
+      try {
+        const cart = normalizeCart(await fetchCart(owner))
+        if (session.current !== owner) return false
+        currentCart.current = cart
+        setServerState({ owner, cart, status: 'ready', error: '' })
+        return true
+      } catch (error) {
+        if (session.current === owner) {
+          setServerState((state) => ({
+            ...state,
+            owner,
+            status: 'error',
+            error: error.response?.data?.message || 'Unable to refresh the cart.',
+          }))
+        }
+        return false
+      }
+    })
+    return queue.current
+  }, [loggedIn, userId])
+
   const localCount = cartItems.reduce((count, item) => count + item.quantity, 0)
   const localSubtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
   const cartCount = serverReady ? serverState.cart.cart_count : localCount
   const subtotal = serverReady ? serverState.cart.subtotal : localSubtotal
   const deliveryCharge = serverReady ? serverState.cart.delivery_charge : (cartItems.length ? STANDARD_DELIVERY_CHARGE : 0)
   const grandTotal = serverReady ? serverState.cart.grand_total : subtotal + deliveryCharge
-  const value = useMemo(() => ({ cartItems, addToCart, removeFromCart, increaseQuantity, decreaseQuantity, clearCart, cartCount, subtotal, deliveryCharge, grandTotal, cartLoading, cartError, retryCart }), [cartItems, addToCart, removeFromCart, increaseQuantity, decreaseQuantity, clearCart, cartCount, subtotal, deliveryCharge, grandTotal, cartLoading, cartError, retryCart])
+  const value = useMemo(() => ({ cartItems, addToCart, removeFromCart, increaseQuantity, decreaseQuantity, clearCart, refreshCart, cartCount, subtotal, deliveryCharge, grandTotal, cartLoading, cartError, retryCart }), [cartItems, addToCart, removeFromCart, increaseQuantity, decreaseQuantity, clearCart, refreshCart, cartCount, subtotal, deliveryCharge, grandTotal, cartLoading, cartError, retryCart])
 
   return <CartStateContext.Provider value={value}>{children}</CartStateContext.Provider>
 }

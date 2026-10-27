@@ -1,21 +1,55 @@
-import { Link, useLocation } from 'react-router-dom'
-import orders from '../data/orders'
+import { useEffect, useState } from 'react'
+import { Link, Navigate, useParams } from 'react-router-dom'
+
+import useAuth from '../hooks/useAuth'
+import { fetchOrder } from '../services/orderService'
 
 function formatCurrency(amount) {
-  return `₹${amount.toLocaleString('en-IN')}`
+  return `₹${Number(amount || 0).toLocaleString('en-IN')}`
 }
 
 function OrderSuccess() {
-  const location = useLocation()
-  const fallbackOrder = orders[0]
-  const orderNumber = typeof location.state?.orderNumber === 'string' && location.state.orderNumber.trim()
-    ? location.state.orderNumber
-    : fallbackOrder.id
-  const suppliedTotal = Number(location.state?.grandTotal)
-  const grandTotal = Number.isFinite(suppliedTotal) && suppliedTotal >= 0
-    ? suppliedTotal
-    : fallbackOrder.total
-  const isMockOrder = orders.some((order) => order.id === orderNumber)
+  const { orderId } = useParams()
+  const { user } = useAuth()
+  const [order, setOrder] = useState(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let active = true
+
+    async function loadOrder() {
+      if (!user?.id || !orderId) return
+
+      try {
+        const result = await fetchOrder(orderId, user.id)
+        if (active) setOrder(result)
+      } catch (requestError) {
+        if (active) setError(requestError.response?.data?.message || requestError.message || 'Unable to load this order.')
+      }
+    }
+
+    loadOrder()
+
+    return () => {
+      active = false
+    }
+  }, [orderId, user?.id])
+
+  if (!orderId) return <Navigate replace to="/orders" />
+
+  if (error) {
+    return (
+      <section className="container py-5">
+        <div className="panel text-center mx-auto p-5" style={{ maxWidth: '680px' }}>
+          <h1 className="h3 fw-bold">Order unavailable</h1>
+          <p className="text-secondary">{error}</p>
+          <Link className="btn btn-success" to="/orders">View My Orders</Link>
+        </div>
+      </section>
+    )
+  }
+
+  if (!order) return <section className="container py-5"><p role="status">Loading your order confirmation...</p></section>
 
   return (
     <section className="container py-5">
@@ -28,18 +62,16 @@ function OrderSuccess() {
         <div className="row g-3 text-start mt-4">
           <div className="col-6">
             <small className="text-secondary">Order ID</small>
-            <b className="d-block">{orderNumber}</b>
+            <b className="d-block">{order.id}</b>
           </div>
           <div className="col-6">
-            <small className="text-secondary">Estimated delivery</small>
-            <b className="d-block">Today · 10–20 mins</b>
+            <small className="text-secondary">Payment</small>
+            <b className="d-block text-capitalize">{String(order.payment_status || 'pending').replaceAll('_', ' ')}</b>
           </div>
         </div>
 
-        <p className="small text-secondary mt-3 mb-0">Order total: <b className="text-dark">{formatCurrency(grandTotal)}</b></p>
-        <Link className="btn btn-success mt-4 px-5" to={isMockOrder ? `/orders/${orderNumber}` : '/orders'}>
-          {isMockOrder ? 'Track Order' : 'View My Orders'}
-        </Link>
+        <p className="small text-secondary mt-3 mb-0">Order total: <b className="text-dark">{formatCurrency(order.grand_total)}</b></p>
+        <Link className="btn btn-success mt-4 px-5" to={`/orders/${order.id}`}>View Order Details</Link>
         <Link className="d-block text-success mt-3" to="/shop">Continue Shopping</Link>
       </div>
     </section>

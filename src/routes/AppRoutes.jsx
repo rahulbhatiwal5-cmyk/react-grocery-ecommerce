@@ -81,6 +81,11 @@ function AppRoutes() {
             element={<OrderSuccess />}
           />
 
+          <Route
+            path="/order-success/:orderId"
+            element={<OrderSuccess />}
+          />
+
         </Route>
 
         <Route path="/about" element={<About />} />
