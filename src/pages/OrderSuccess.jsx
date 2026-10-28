@@ -51,13 +51,15 @@ function OrderSuccess() {
 
   if (!order) return <section className="container py-5"><p role="status">Loading your order confirmation...</p></section>
 
+  const awaitingOnlineConfirmation = order.payment_method === 'razorpay' && order.payment_status !== 'paid'
+
   return (
     <section className="container py-5">
       <div className="panel text-center mx-auto p-5" style={{ maxWidth: '680px' }}>
-        <div className="display-2 text-success">✓</div>
-        <div className="eyebrow mt-3">Order confirmed</div>
-        <h1 className="fw-bold">Order placed successfully!</h1>
-        <p className="text-secondary">Your groceries are on the way.</p>
+        <div className={`display-2 ${awaitingOnlineConfirmation ? 'text-warning' : 'text-success'}`}>{awaitingOnlineConfirmation ? '…' : '✓'}</div>
+        <div className="eyebrow mt-3">{awaitingOnlineConfirmation ? 'Payment confirmation pending' : 'Order confirmed'}</div>
+        <h1 className="fw-bold">{awaitingOnlineConfirmation ? 'We are confirming your payment' : 'Order placed successfully!'}</h1>
+        <p className="text-secondary">{awaitingOnlineConfirmation ? 'Do not pay again. Refresh this page shortly or check your order details.' : 'Your groceries are on the way.'}</p>
 
         <div className="row g-3 text-start mt-4">
           <div className="col-6">
@@ -66,7 +68,7 @@ function OrderSuccess() {
           </div>
           <div className="col-6">
             <small className="text-secondary">Payment</small>
-            <b className="d-block text-capitalize">{String(order.payment_status || 'pending').replaceAll('_', ' ')}</b>
+            <b className="d-block text-capitalize">{order.payment_method === 'razorpay' ? 'Razorpay · ' : 'Cash on Delivery · '}{String(order.payment_status || 'pending').replaceAll('_', ' ')}</b>
           </div>
         </div>
 

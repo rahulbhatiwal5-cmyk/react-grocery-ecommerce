@@ -100,7 +100,7 @@ function Orders() {
             </div>
             <hr />
             <div className="d-flex justify-content-between align-items-center gap-3">
-              <b>{formatCurrency(order.grand_total)}</b>
+              <div><b>{formatCurrency(order.grand_total)}</b><small className="d-block text-secondary text-capitalize">{order.payment_method === 'razorpay' ? 'Razorpay' : 'Cash on delivery'} · {statusLabel(order.payment_status)}</small></div>
               <Link className="link-green" to={`/orders/${order.id}`}>View Details</Link>
             </div>
           </article>

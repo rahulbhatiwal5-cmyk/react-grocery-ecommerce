@@ -5,6 +5,7 @@ import useAuth from '../hooks/useAuth'
 import useCart from '../hooks/useCart'
 import { createAddress, fetchAddresses } from '../services/addressService'
 import { placeOrder } from '../services/orderService'
+import { createRazorpayOrder, markRazorpayPaymentFailed, verifyRazorpayPayment } from '../services/paymentService'
 
 const initialAddressValues = {
   full_name: '',
@@ -42,6 +43,57 @@ function addressText(address) {
   ].filter(Boolean).join(', ')
 }
 
+function loadRazorpayScript() {
+  if (window.Razorpay) return Promise.resolve()
+
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => reject(new Error('Razorpay checkout took too long to load. Please try again.')), 20000)
+    const finish = (callback, value) => {
+      window.clearTimeout(timeout)
+      callback(value)
+    }
+    const existingScript = document.querySelector('script[data-greenbasket-razorpay]')
+    if (existingScript) {
+      existingScript.addEventListener('load', () => finish(resolve), { once: true })
+      existingScript.addEventListener('error', () => finish(reject, new Error('Razorpay checkout could not be loaded.')), { once: true })
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.async = true
+    script.dataset.greenbasketRazorpay = 'true'
+    script.onload = () => finish(resolve)
+    script.onerror = () => finish(reject, new Error('Razorpay checkout could not be loaded. Check your internet connection and try again.'))
+    document.body.appendChild(script)
+  })
+}
+
+function openRazorpayCheckout(attempt) {
+  return new Promise((resolve, reject) => {
+    const checkout = new window.Razorpay({
+      key: attempt.key_id,
+      amount: attempt.amount,
+      currency: attempt.currency,
+      name: 'GreenBasket',
+      description: `Order #${attempt.order_id}`,
+      order_id: attempt.razorpay_order_id,
+      prefill: attempt.prefill,
+      theme: { color: '#198754' },
+      handler: resolve,
+      modal: {
+        ondismiss: () => reject({ code: 'checkout_dismissed', description: 'Payment was cancelled. Your cart is still available.' }),
+      },
+    })
+
+    checkout.on('payment.failed', (response) => reject({
+      code: response.error?.code || 'payment_failed',
+      description: response.error?.description || 'Razorpay could not complete the payment.',
+    }))
+    checkout.open()
+  })
+}
+
 function Checkout() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -63,6 +115,7 @@ function Checkout() {
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [addressValues, setAddressValues] = useState(initialAddressValues)
   const [savingAddress, setSavingAddress] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState('cod')
   const [submitting, setSubmitting] = useState(false)
   const [orderError, setOrderError] = useState('')
   const orderKey = useRef(null)
@@ -159,12 +212,43 @@ function Checkout() {
     setSubmitting(true)
     setOrderError('')
 
+    let attempt = null
+    let paymentCompleted = false
+
     try {
-      const order = await placeOrder(Number(selectedAddressId), orderKey.current, user.id)
+      if (paymentMethod === 'cod') {
+        const order = await placeOrder(Number(selectedAddressId), orderKey.current, user.id)
+        await refreshCart()
+        navigate(`/order-success/${order.id}`, { replace: true })
+        return
+      }
+
+      attempt = await createRazorpayOrder(Number(selectedAddressId), orderKey.current, user.id)
+      await loadRazorpayScript()
+      const payment = await openRazorpayCheckout(attempt)
+      paymentCompleted = true
+      const order = await verifyRazorpayPayment({
+        order_id: attempt.order_id,
+        razorpay_order_id: payment.razorpay_order_id,
+        razorpay_payment_id: payment.razorpay_payment_id,
+        razorpay_signature: payment.razorpay_signature,
+      }, user.id)
       await refreshCart()
       navigate(`/order-success/${order.id}`, { replace: true })
     } catch (error) {
-      setOrderError(getErrorMessage(error, 'Unable to place your order. Please review your cart and try again.'))
+      if (attempt && !paymentCompleted) {
+        try {
+          await markRazorpayPaymentFailed(attempt, error, user.id)
+          orderKey.current = null
+        } catch {
+          // Keep the cart and pending reservation intact when failure reporting cannot reach the server.
+        }
+      }
+
+      const fallback = paymentCompleted
+        ? 'We received your payment response but could not confirm it yet. Your cart is unchanged; check your orders shortly before retrying.'
+        : 'Unable to complete the payment. Your cart is still available.'
+      setOrderError(getErrorMessage(error, fallback))
     } finally {
       setSubmitting(false)
     }
@@ -284,8 +368,18 @@ function Checkout() {
               )}
 
               <h2 className="h5 fw-bold mt-5">2. Payment Method</h2>
-              <div className="border rounded-3 p-3">Cash on Delivery</div>
-              <p className="small text-secondary mt-2 mb-0">Payment will be collected when your groceries are delivered.</p>
+              <div className="d-grid gap-2 mt-3">
+                <label className={`border rounded-3 p-3 ${paymentMethod === 'cod' ? 'border-success' : ''}`}>
+                  <input checked={paymentMethod === 'cod'} className="form-check-input me-2" name="payment-method" onChange={() => setPaymentMethod('cod')} type="radio" />
+                  <b>Cash on Delivery</b>
+                  <small className="d-block text-secondary ms-4">Pay when your groceries are delivered.</small>
+                </label>
+                <label className={`border rounded-3 p-3 ${paymentMethod === 'razorpay' ? 'border-success' : ''}`}>
+                  <input checked={paymentMethod === 'razorpay'} className="form-check-input me-2" name="payment-method" onChange={() => setPaymentMethod('razorpay')} type="radio" />
+                  <b>Pay Online with Razorpay</b>
+                  <small className="d-block text-secondary ms-4">Secure UPI, card, and net banking payment in Razorpay Test Mode.</small>
+                </label>
+              </div>
 
               {cartError && (
                 <div className="alert alert-warning mt-3" role="alert">
@@ -304,7 +398,7 @@ function Checkout() {
                 onClick={handlePlaceOrder}
                 type="button"
               >
-                {submitting ? 'Placing order...' : 'Place Order'}
+                {submitting ? 'Processing payment...' : paymentMethod === 'razorpay' ? 'Pay securely with Razorpay' : 'Place Order'}
               </button>
             </div>
           </div>

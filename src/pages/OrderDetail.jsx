@@ -132,7 +132,8 @@ function OrderDetail() {
         <div className="d-flex flex-wrap gap-2 mb-4">
           <span className="badge text-bg-light border text-capitalize">Status: {formatStatus(order.status)}</span>
           <span className="badge text-bg-light border text-capitalize">Payment: {formatStatus(order.payment_status)}</span>
-          <span className="badge text-bg-light border">Cash on Delivery</span>
+          <span className="badge text-bg-light border text-capitalize">{order.payment_method === 'razorpay' ? 'Razorpay' : 'Cash on Delivery'}</span>
+          {order.payment_id && <span className="badge text-bg-light border">Payment ID: {order.payment_id}</span>}
         </div>
 
         <div className="row g-4">
